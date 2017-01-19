@@ -1,0 +1,6 @@
+Django>=1.8
+elasticsearch-dsl==0.0.9
+elasticsearch==2.1.0
+python-dateutil
+six
+pytz
