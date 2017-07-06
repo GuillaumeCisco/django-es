@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.admin.decorators import register
 from django.utils.module_loading import autodiscover_modules
 from elasticsearch import Elasticsearch
@@ -5,8 +6,7 @@ from elasticsearch import Elasticsearch
 __author__ = 'guillaume'
 
 # cache es_instance
-# TODO customize it from settings
-es_instance = Elasticsearch()
+es_instance = getattr(settings, 'ES_CLIENT', Elasticsearch())
 
 # This import need to be placed after for avoiding circular dependencies
 from .mappings import IndexMapping, mapping, ModelIndex

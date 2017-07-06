@@ -94,6 +94,8 @@ Procedure
 ---------
 
 Add 'django_es' to `INSTALLED_APPS`.
+You can define in your own code an `ES_CLIENT` parameter for connecting to your Elasticsearch instance,
+By default `ES_CLIENT` is `Elasticsearch()`
 
 Example
 -------
