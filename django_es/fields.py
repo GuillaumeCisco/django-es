@@ -1,12 +1,13 @@
-from datetime import date
+from datetime import date, datetime
 from dateutil import parser
 from elasticsearch_dsl import Field
-from elasticsearch_dsl.field import InnerObject, FIELDS, ValidationException
+from elasticsearch_dsl.field import InnerObject, ValidationException
 from django.template import Context, loader
 
 __all__ = [
-    'Object', 'Nested', 'Date', 'String', 'Float',
-    'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip'
+    'Object', 'Nested', 'Date', 'String', 'Text', 'Keyword', 'Float',
+    'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip',
+    'Attachment', 'GeoPoint', 'GeoShape', 'Completion'
 ]
 
 
@@ -81,11 +82,13 @@ class Date(AbstractField):
     name = 'date'
     _coerce = True
 
-    def _to_python(self, data):
+    def _deserialize(self, data):
         if not data:
             return None
         if isinstance(data, date):
             return data
+        if isinstance(data, int):
+            return datetime.utcfromtimestamp(data / 1000)
 
         try:
             # TODO: add format awareness
@@ -107,13 +110,96 @@ class String(AbstractField):
         return ''
 
 
-# generate the query classes dynamically
-for f in FIELDS:
-    attrs = {'name': f}
-    cls_name = str(''.join(s.title() for s in f.split('_')))
-    fclass = type(cls_name, (AbstractField,), attrs)
-    globals()[fclass.__name__] = fclass
-    __all__.append(fclass.__name__)
+class Text(AbstractField):
+    _param_defs = {
+        'fields': {'type': 'field', 'hash': True},
+        'analyzer': {'type': 'analyzer'},
+        'search_analyzer': {'type': 'analyzer'},
+        'search_quote_analyzer': {'type': 'analyzer'},
+    }
+    name = 'text'
+
+    def _empty(self):
+        return ''
+
+
+class Keyword(AbstractField):
+    _param_defs = {
+        'fields': {'type': 'field', 'hash': True},
+        'search_analyzer': {'type': 'analyzer'},
+    }
+    name = 'keyword'
+
+    def _empty(self):
+        return ''
+
+
+class Boolean(AbstractField):
+    name = 'boolean'
+
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        return bool(data)
+
+    def clean(self, data):
+        if data is not None:
+            data = self.deserialize(data)
+        if data is None and self._required:
+            raise ValidationException("Value required for this field.")
+        return data
+
+
+class Float(AbstractField):
+    name = 'float'
+
+
+class HalfFloat(AbstractField):
+    name = 'half_float'
+
+
+class Double(AbstractField):
+    name = 'double'
+
+
+class Byte(AbstractField):
+    name = 'byte'
+
+
+class Short(AbstractField):
+    name = 'short'
+
+
+class Integer(AbstractField):
+    name = 'integer'
+
+
+class Long(AbstractField):
+    name = 'long'
+
+
+class Ip(AbstractField):
+    name = 'ip'
+
+
+class Attachment(AbstractField):
+    name = 'attachment'
+
+
+class GeoPoint(AbstractField):
+    name = 'geo_point'
+
+
+class GeoShape(AbstractField):
+    name = 'geo_shape'
+
+
+class Completion(AbstractField):
+    name = 'completion'
+
+
+class Percolator(AbstractField):
+    name = 'percolator'
 
 
 # Correspondence between a Django field and an elasticsearch field.

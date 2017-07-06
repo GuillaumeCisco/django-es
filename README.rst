@@ -17,7 +17,7 @@ The big change is it uses register admin as a philosophy instead of django manag
 So a lot of code has been removed and there is a lot of changes.
 There are no alias, no management commands.
 
-This contribution use elasticsearch 2.x and its restrictions (unique field name related to one unique mapping definition).
+This contribution use elasticsearch 5.x and its restrictions (unique field name related to one unique mapping definition).
 CRUD operations are mostly done by elasticsearch-dsl library for more control and maintainability.
 
 Features
@@ -184,7 +184,7 @@ defined either in the model or in the ModelIndex subclass
         )
 
         class Meta:
-            index = 'django_es'  # optional but recommended, default is `django_es`
+            index = 'django_es'  # optional but recommended, default is `django_es`, ever use `populate_index` method
             exclude = ('last_modified', 'is_finalized', 'is_recorded', 'diff_date', 'duration',)
 
         def prepare_img(self, obj):
@@ -416,6 +416,18 @@ This can also be used to index foreign keys:
 Class methods
 ~~~~~~~~~~~~~
 
+populate\_index
+^^^^^^^^^^^^^^^
+
+Override this method if you want to deal with dynamic index generation.
+Example with dynamic date:
+It will create a new index every day.
+
+.. code:: python
+
+    def populate_index(self):
+        return 'my_index_name-%(now)s' % {'now': now().strftime("%Y.%m.%d")}
+
 matches\_indexing\_condition
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -441,9 +453,8 @@ overridden as follows.
 Meta subclass attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Note**: in the following, any variable defined a being a ``list``
-could also be a ``tuple``. ##### model *Required:* defines the Django
-model for which this ModelIndex is applicable.
+**Note**: in the following, any variable defined as being a ``list``
+could also be a ``tuple``.
 
 fields
 ^^^^^^

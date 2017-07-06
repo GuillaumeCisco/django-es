@@ -26,7 +26,15 @@ class IndexMapping(object):
         self._registry = {}  # model_class class -> model_index_class instance
         self.name = name
 
-    def register(self, model_or_iterable=None, model_index_class=None):
+    def get_index(self, index, indice):
+        if index is None:  # get last indexex
+            index = indice.indexes[-1:]
+        else:  # append it
+            indice.indexes.append(index)
+
+        return index
+
+    def register(self, model_or_iterable=None, model_index_class=None, index=None):
         """
         Registers the given model(s) with the given model_index_class class.
 
@@ -59,7 +67,8 @@ class IndexMapping(object):
                 try:
                     # create mapping for model related to a doctype
                     indice = model_index_class(model)
-                    es_instance.indices.create(index=indice.index, body={
+                    index = self.get_index(index, indice)
+                    es_instance.indices.create(index=index, body={
                         'mappings': indice.mapping.to_dict(),
                         'settings': {'analysis': indice.mapping._collect_analysis()}}, ignore=400)
                 except elasticsearch.exceptions.RequestError as exc:
@@ -77,7 +86,8 @@ class IndexMapping(object):
             # TODO : check doctype does not already exist?
             try:
                 indice = model_index_class()
-                es_instance.indices.create(index=indice.index, body={
+                index = self.get_index(index, indice)
+                es_instance.indices.create(index=index, body={
                     'mappings': indice.mapping.to_dict(),
                     'settings': {
                         'analysis': indice.mapping._collect_analysis()}},

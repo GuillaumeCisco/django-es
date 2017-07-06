@@ -42,6 +42,7 @@ class ModelIndex(object):
 
         self.fields = {}
         self.index = getattr(_meta, 'index', 'django_es')
+        self.indexes = [self.populate_index()]
         fields = getattr(_meta, 'fields', [])
         excludes = getattr(_meta, 'exclude', [])
         hotfixes = getattr(_meta, 'hotfixes', {})
@@ -74,6 +75,9 @@ class ModelIndex(object):
 
         self.signal_processor = get_signal_processor()
         self.signal_processor.setup(self.model)
+
+    def populate_index(self):
+        return self.index
 
     @staticmethod
     def matches_indexing_condition(item):

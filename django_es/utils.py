@@ -33,7 +33,11 @@ def update_index(model_items, model, action='index', bulk_size=100, num_docs=-1,
     logging.info('Getting index for model {}.'.format(model.__name__))
 
     index_instance = mapping.get_index_instance(model)
-    index_name = index_instance.index
+
+    # if the last indexes not equal to the populated index, recreate index, before change
+    index_name = index_instance.populate_index()
+    if index_name not in index_instance.indexes[-1]:
+        mapping.register(model, index_instance, i)
 
     if num_docs == -1:
         if isinstance(model_items, (list, tuple)):
@@ -70,7 +74,10 @@ def delete_index_item(item, model, refresh=True):
     logging.info('Getting index for model {}.'.format(model.__name__))
 
     index_instance = mapping.get_index_instance(model)
-    index_name = index_instance.index
+    # if the last indexes not equal to the populated index, recreate index, before change
+    index_name = index_instance.populate_index()
+    if index_name not in index_instance.indexes[-1]:
+        mapping.register(model, index_instance, i)
 
     item_es_id = getattr(item, index_instance.id_field)
     try:
@@ -97,6 +104,9 @@ def create_indexed_document(index_instance, model_items, action):
         for doc in model_items:
             if index_instance.matches_indexing_condition(doc):
                 d = index_instance.serialize_object(doc)
-                d['_id'] = str(getattr(doc, index_instance.id_field))
+                pk = getattr(doc, index_instance.id_field)
+                # if working with post save signal, we know the correct pk field
+                if pk is not None:
+                    d['_id'] = str(pk)
                 data.append(d)
     return data
