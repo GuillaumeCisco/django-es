@@ -4,6 +4,7 @@ from django.db.models.base import ModelBase
 from django_es import es_instance
 from .indices import ModelIndex
 import elasticsearch
+import logging
 
 system_check_errors = []
 
@@ -77,6 +78,10 @@ class IndexMapping(object):
                         ' https://www.elastic.co/blog/changing-mapping-with-zero-downtime for more information.' +
                         ' Exception: ' + exc.info['error']['reason']
                     )
+                except elasticsearch.exceptions.ConnectionError as exc:
+                    logging.error('Cannot connect to elasticsearch instance, please verify your settings')
+                    # register a model with its indice
+                    self._registry[model] = indice
                 else:
                     # register a model with its indice
                     self._registry[model] = indice
@@ -98,6 +103,10 @@ class IndexMapping(object):
                         ' https://www.elastic.co/blog/changing-mapping-with-zero-downtime for more information.' +
                         ' Exception: ' + exc.info['error']['reason']
                     )
+            except elasticsearch.exceptions.ConnectionError as exc:
+                logging.error('Cannot connect to elasticsearch instance, please verify your settings')
+                # register a model with its indice
+                self._registry[indice.doctype] = indice
             else:
                 # register a model with its indice
                 self._registry[indice.doctype] = indice
