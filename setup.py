@@ -23,7 +23,7 @@ setup(
     name="django_es",
     description="A Django elasticsearch wrapper for model and helper using elasticsearch-dsl-py high level library.",
     license="BSD-3",
-    url="http://gitlab.jacquieetmichel.net/main/django-es",
+    url="https://github.com/GuillaumeCisco/django-es",
     long_description=long_description,
     version=__versionstr__,
     author="Guillaume Cisco",
