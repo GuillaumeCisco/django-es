@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: django-es
-Version: 0.0.2
+Version: 0.0.3
 Summary: A Django elasticsearch wrapper for model and helper using elasticsearch-dsl-py high level library.
 Home-page: https://github.com/GuillaumeCisco/django-es
 Author: Guillaume Cisco
