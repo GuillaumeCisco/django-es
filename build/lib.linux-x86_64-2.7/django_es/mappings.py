@@ -59,7 +59,10 @@ class IndexMapping(object):
                 raise ImproperlyConfigured('The model %s is abstract, so it '
                                            'cannot be registered with admin.' % model.__name__)
 
-            if self.is_registered(model):
+            indice = model_index_class(model)
+            index = self.get_index(index, indice)
+
+            if self.is_registered(model, index):
                 raise AlreadyRegistered('The model %s is already registered' % model.__name__)
 
             # Ignore the registration if the model has been
@@ -67,8 +70,6 @@ class IndexMapping(object):
             if not model._meta.swapped:
                 try:
                     # create mapping for model related to a doctype
-                    indice = model_index_class(model)
-                    index = self.get_index(index, indice)
                     es_instance.indices.create(index=index, body={
                         'mappings': indice.mapping.to_dict(),
                         'settings': {'analysis': indice.mapping._collect_analysis()}}, ignore=400)
@@ -78,7 +79,7 @@ class IndexMapping(object):
                         ' https://www.elastic.co/blog/changing-mapping-with-zero-downtime for more information.' +
                         ' Exception: ' + exc.info['error']['reason']
                     )
-                except elasticsearch.exceptions.ConnectionError as exc:
+                except elasticsearch.exceptions.ConnectionError:
                     logging.error('Cannot connect to elasticsearch instance, please verify your settings')
                     # register a model with its indice
                     self._registry[model] = indice
@@ -89,9 +90,9 @@ class IndexMapping(object):
         # classic mapping
         if not model_or_iterable:
             # TODO : check doctype does not already exist?
+            indice = model_index_class()
+            index = self.get_index(index, indice)
             try:
-                indice = model_index_class()
-                index = self.get_index(index, indice)
                 es_instance.indices.create(index=index, body={
                     'mappings': indice.mapping.to_dict(),
                     'settings': {
@@ -124,11 +125,11 @@ class IndexMapping(object):
                 raise NotRegistered('The model %s is not registered' % model.__name__)
             del self._registry[model]
 
-    def is_registered(self, model):
+    def is_registered(self, model, index=None):
         """
         Check if a model class is registered with this `IndexMapping`.
         """
-        return model in self._registry
+        return model in self._registry and (index is None or index in self._registry[model].indexes)
 
     def get_index_instance(self, model):
         """

@@ -2,7 +2,7 @@
 from os.path import join, dirname
 from setuptools import setup, find_packages
 
-VERSION = (0, 0, 3)
+VERSION = (0, 0, 4)
 __version__ = VERSION
 __versionstr__ = '.'.join(map(str, VERSION))
 
@@ -13,8 +13,8 @@ with open(join(dirname(__file__), 'README.rst')) as f:
 
 install_requires = [
     'django>=1.8',
-    'elasticsearch-dsl>=0.0.4',
-    'elasticsearch==2.1.0',
+    'elasticsearch-dsl>=5.3.0',
+    'elasticsearch>=5.4.0',
     'python-dateutil',
     'six',
 ]
