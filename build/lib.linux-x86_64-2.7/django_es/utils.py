@@ -37,7 +37,7 @@ def update_index(model_items, model, action='index', bulk_size=100, num_docs=-1,
     # if the last indexes not equal to the populated index, recreate index, before change
     index_name = index_instance.populate_index()
     if index_name not in index_instance.indexes:
-        mapping.register(model, index_instance, index_name)
+        mapping.register(model, index_instance.__class__, index_name)
 
     if num_docs == -1:
         if isinstance(model_items, (list, tuple)):
@@ -77,7 +77,7 @@ def delete_index_item(item, model, refresh=True):
     # if the last indexes not equal to the populated index, recreate index, before change
     index_name = index_instance.populate_index()
     if index_name not in index_instance.indexes:
-        mapping.register(model, index_instance, index_name)
+        mapping.register(model, index_instance.__class__, index_name)
 
     item_es_id = getattr(item, index_instance.id_field)
     try:
